@@ -23,18 +23,35 @@ public class WaveCalculator extends JFrame {
     private JComboBox<String> windDirection;
     private JFormattedTextField windSpeed;
 
-    public waveCalculator() {
+    public WaveCalculator() {
         initComponents();
         newUser = new User();
 
-        // Prevent interaction with non-editable text areas
+        // Prevent interaction with noneditable text areas
         introduction.setFocusable(false);
         display.setFocusable(false);
 
-        // TODO: Add interaction code
+        // TODO: Finish interaction code
+        waveHeight.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent evt) {
+                newUser.onlyDigits(evt);
+            }
+        });
+
+        wavePeriod.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent evt) {
+                newUser.onlyDigits(evt);
+            }
+        });
+
+        windSpeed.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent evt) {
+                newUser.onlyDigits(evt);
+            }
+        });
     }
 
-    private void initComponents() {}
+    private void initComponents() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); // reccomended
         setTitle("Wave Quality Calculator");
 
@@ -77,6 +94,6 @@ public class WaveCalculator extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    void main() {}
-        new waveCalculator().setVisible(true));
+    void main() {
+        new waveCalculator().setVisible(true);
     }
