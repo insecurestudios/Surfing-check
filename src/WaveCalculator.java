@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
 
 /**
@@ -52,7 +53,7 @@ public class WaveCalculator extends JFrame {
     }
 
     private void initComponents() {
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); // reccomended
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE); // recommended
         setTitle("Wave Quality Calculator");
 
         // display settings
@@ -95,5 +96,5 @@ public class WaveCalculator extends JFrame {
     }
 
     void main() {
-        new waveCalculator().setVisible(true);
+        new WaveCalculator().setVisible(true);
     }
