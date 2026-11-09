@@ -7,7 +7,7 @@ import java.util.*;
 /**
  * Backend code
  * @author liam
- * @version 11/5
+ * @version 11/9
  */
 
 public class User {
@@ -51,6 +51,24 @@ public class User {
     public double[] calaMayorB = {0.1, 0.2, 0.5, 0.8};
     public double[] calaMayorI = {0.2, 0.5, 1.0, 2.0};
     public double[] calaMayorA = {0.5, 1.0, 2.0, 3.0};
+
+    // Direction quality and ideal direction arrays
+    public String[] dirQuality = {"ideal", "good", "good", "ok", "ok", "bad", "bad", "very bad"};
+    public String[] idealSW = {"SW", "S", "W", "NW", "SE", "E", "N", "NE"};
+    public String[] idealNE = {"NE", "N", "E", "SE", "S", "SW", "W", "NW"};
+    public String[] idealS = {"S", "SW", "SE", "E", "W", "NE", "N", "NW"};
+    public String[] idealN = {"N", "NE", "NW", "W", "E", "SE", "S", "SW"};
+    public String[] idealE = {"E", "NE", "SE", "N", "S", "SW", "W", "NW"};
+    public String[] idealW = {"W", "SW", "NW", "S", "N", "NE", "SE", "E"};
+
+    // Period arrays
+    public String[] periodQuality = {"good", "ok", "unsurfable"};
+    public double[] period = {18.0, 6.0, 3.0};
+
+    // State variables
+    public String beach;
+    public String windDir;
+    public String waveDir;
 
 
     public User() {
@@ -134,10 +152,84 @@ public class User {
         return temp;
     }
 
+    // Methods to find values of desired thresholds
     public double value(double @NotNull [] values, String[] search, String want) {
         return values[getIndex(search, want)];
     }
 
+    public String value(String[] values, String[] search, String want) {
+        return values[getIndex(search, want)];
+    }
+
+    public String value2(String[] values, String[] search, String want) {
+        return values[getIndex(search, want) + 1];
+    }
+
+    // Returns the ideal direction for wind/waves
+    public String[] windOrWaveArray(String direction) {
+        return switch (direction) {
+            case "SW" -> idealSW;
+            case "S" -> idealS;
+            case "N" -> idealN;
+            case "E" -> idealE;
+            case "W" -> idealW;
+            case "NE" -> idealNE;
+            default -> null;
+        };
+    }
+
+    // The below 4 methods split up the calculation logic
+    public void periodAffect() {
+        if (waveP < period[2]) {
+            display.add(" Unfortunately the wave period is too short and will make the waves unsurfable");
+        } else if (waveP <= period[1]) {
+            display.add(" The wave period is ok");
+        } else if (waveP < period[0]) {
+            display.add(" The wave period is good");
+        } else {
+            display.add(" The wave period is fantastic and will make the waves more surfable");
+        }
+    }
+
+    public void wavesAffect(String idealWaveDir) {
+        String[] arr = windOrWaveArray(idealWaveDir);
+        if (waveDir.equals(value(arr, dirQuality, "ideal"))) {
+            display.add(" The wave direction is ideal");
+            periodAffect();
+        } else if (waveDir.equals(value(arr, dirQuality, "good")) || waveDir.equals(value2(arr, dirQuality, "good"))) {
+            display.add(" The wave direction is good");
+            periodAffect();
+        } else if (waveDir.equals(value(arr, dirQuality, "ok")) || waveDir.equals(value2(arr, dirQuality, "ok"))) {
+            display.add(" The wave direction is ok");
+            periodAffect();
+        } else if (waveDir.equals(value(arr, dirQuality, "bad")) || waveDir.equals(value2(arr, dirQuality, "bad"))) {
+            display.add(" The wave direction is bad");
+        } else {
+            display.add(" The wave direction is very bad");
+        }
+    }
+
+    public void windAffect(String idealWindDir) {
+        if (affects) {
+            String[] arr = windOrWaveArray(idealWindDir);
+            if (windDir.equals(value(arr, dirQuality, "ideal"))) {
+                display.add(" The wind direction is ideal and will significantly improve the quality of the waves");
+                wavesAffect(idealWindDir);
+            } else if (windDir.equals(value(arr, dirQuality, "good")) || windDir.equals(value2(arr, dirQuality, "good"))) {
+                display.add(" The wind direction is good and will probably improve the waves");
+                wavesAffect(idealWindDir);
+            } else if (windDir.equals(value(arr, dirQuality, "ok")) || windDir.equals(value2(arr, dirQuality, "ok"))) {
+                display.add(" The wind direction is ok and will not affect the waves");
+                wavesAffect(idealWindDir);
+            } else if (windDir.equals(value(arr, dirQuality, "bad")) || windDir.equals(value2(arr, dirQuality, "bad"))) {
+                display.add(" The wind direction is bad and will probably worsen the quality of the waves");
+            } else {
+                display.add(" The wind direction is very bad and will significantly worsen the quality of the waves");
+            }
+        } else {
+            wavesAffect(idealWindDir);
+        }
+    }
 
     public void heightAffect(double[] values) {
         if (waveH <= value(values, waveQuality, "too small")) {
@@ -151,6 +243,69 @@ public class User {
         } else {
             display.add("The waves are too big for the selected surf ability");
         }
+    }
+
+    // Performs the main surfability calculation
+    public void calculate(String beachInput, String ability, String windDirInput, String waveDirInput) {
+        display.clear();
+        beach = beachInput;
+        windDir = windDirInput;
+        waveDir = waveDirInput;
+
+        switch (beach) {
+            case "Peguera" -> {
+                if (ability.equals("Beginner")) heightAffect(pegueraB);
+                else if (ability.equals("Intermediate")) heightAffect(pegueraI);
+                else if (ability.equals("Advanced")) heightAffect(pegueraA);
+                windAffect("NE");
+            }
+            case "Son Serra de Marina" -> {
+                if (ability.equals("Beginner")) heightAffect(sonSerraB);
+                else if (ability.equals("Intermediate")) heightAffect(sonSerraI);
+                else if (ability.equals("Advanced")) heightAffect(sonSerraA);
+                windAffect("SW");
+            }
+            case "Can Pastilla" -> {
+                if (ability.equals("Beginner")) heightAffect(canPastillaB);
+                else if (ability.equals("Intermediate")) heightAffect(canPastillaI);
+                else if (ability.equals("Advanced")) heightAffect(canPastillaA);
+                windAffect("N");
+            }
+            case "Sa Rapita" -> {
+                if (ability.equals("Beginner")) heightAffect(saRapitaB);
+                else if (ability.equals("Intermediate")) heightAffect(saRapitaI);
+                else if (ability.equals("Advanced")) heightAffect(saRapitaA);
+                windAffect("NE");
+            }
+            case "Cala Mesquida" -> {
+                if (ability.equals("Beginner")) heightAffect(calaMesquidaB);
+                else if (ability.equals("Intermediate")) heightAffect(calaMesquidaI);
+                else if (ability.equals("Advanced")) heightAffect(calaMesquidaA);
+                windAffect("S");
+            }
+            case "Canyamel" -> {
+                if (ability.equals("Beginner")) heightAffect(canyamelB);
+                else if (ability.equals("Intermediate")) heightAffect(canyamelI);
+                else if (ability.equals("Advanced")) heightAffect(canyamelA);
+                windAffect("W");
+            }
+            case "Cala Mayor" -> {
+                if (ability.equals("Beginner")) heightAffect(calaMayorB);
+                else if (ability.equals("Intermediate")) heightAffect(calaMayorI);
+                else if (ability.equals("Advanced")) heightAffect(calaMayorA);
+                windAffect("SW");
+            }
+        }
+    }
+
+    // Creates the displayable string for the GUI
+    public String displayText() {
+        displayString = "In " + beach + ":";
+        for (String s : display) {
+            displayString = displayString.concat(s);
+        }
+        displayString = displayString.concat(".");
+        return displayString;
     }
 }
 
