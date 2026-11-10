@@ -10,10 +10,8 @@ import java.awt.event.*;
  */
 
 public class WaveCalculator extends JFrame {
-    private User newUser; //will be made later
+    public final User newUser;
 
-    // swing items
-    private JButton calculate;
     private JComboBox<String> beachChosen;
     private JTextArea display;
     private JTextArea introduction;
@@ -32,7 +30,7 @@ public class WaveCalculator extends JFrame {
         introduction.setFocusable(false);
         display.setFocusable(false);
 
-        // TODO: Finish interaction code
+        // Only allow numbers for the input fields
         waveHeight.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent evt) {
                 newUser.onlyDigits(evt);
@@ -64,7 +62,8 @@ public class WaveCalculator extends JFrame {
         display.setLineWrap(true);
         display.setWrapStyleWord(true);
 
-        calculate = new JButton("Calculate");
+        // swing items
+        JButton calculate = new JButton("Calculate");
 
         // Combo boxes are dropdowns
         beachChosen = new JComboBox<>(new String[]{"Peguera", "Son Serra de Marina", "Can Pastilla", "Sa Rapita", "Cala Mesquida", "Canyamel", "Cala Mayor"});
@@ -76,29 +75,8 @@ public class WaveCalculator extends JFrame {
         wavePeriod = new JFormattedTextField();
         windSpeed = new JFormattedTextField();
 
-        // creates the layout
-        setLayout(new GridLayout(6, 2, 5, 5));
-        add(new JLabel("Beach:"));
-        add(beachChosen);
-        add(new JLabel("Surf Ability:"));
-        add(surfAbility);
-        add(new JLabel("Wave Height:"));
-        add(waveHeight);
-        add(new JLabel("Wave Period:"));
-        add(wavePeriod);
-        add(new JLabel("Wind Speed:"));
-        add(windSpeed);
-        add(calculate);
-
-        // resizes and centers window
-        pack();
-        setLocationRelativeTo(null);
-
         // Calculate button code
         calculate.addActionListener(e -> {
-            boolean hValid = newUser.setWaveHeight(waveHeight.getText());
-            boolean pValid = newUser.setWavePeriod(wavePeriod.getText());
-            boolean wValid = newUser.setWindSpeed(windSpeed.getText());
 
             if (newUser.allFieldsEntered()) {
                 String selectedBeach = (String) beachChosen.getSelectedItem();
@@ -112,8 +90,46 @@ public class WaveCalculator extends JFrame {
                 display.setText("Please enter valid numeric values in all fields.");
             }
         });
+
+        // Display settings
+        display.setEditable(false);
+        display.setLineWrap(true);
+        display.setWrapStyleWord(true);
+        JScrollPane scrollPane = new JScrollPane(display);
+        setLayout(new BorderLayout(10, 10));
+
+        // Combining all the elements
+        JPanel inputPanel = new JPanel(new GridLayout(7, 2, 5, 5));
+        inputPanel.add(new JLabel("Beach:"));
+        inputPanel.add(beachChosen);
+        inputPanel.add(new JLabel("Surf Ability:"));
+        inputPanel.add(surfAbility);
+        inputPanel.add(new JLabel("Wave Height:"));
+        inputPanel.add(waveHeight);
+        inputPanel.add(new JLabel("Wave Period:"));
+        inputPanel.add(wavePeriod);
+        inputPanel.add(new JLabel("Wind Speed:"));
+        inputPanel.add(windSpeed);
+        inputPanel.add(new JLabel("Wind Direction:"));
+        inputPanel.add(windDirection);
+        inputPanel.add(new JLabel("Wave Direction:"));
+        inputPanel.add(waveDirection);
+
+        // Create a bottom panel for the calculate button and scrollable results
+        JPanel bottomPanel = new JPanel(new BorderLayout(5, 5));
+        scrollPane.setPreferredSize(new Dimension(400, 100));
+        bottomPanel.add(calculate, BorderLayout.NORTH);
+        bottomPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Add panels to the frame
+        add(inputPanel, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        setSize(450, 400);
+        setLocationRelativeTo(null);
     }
 
     void main() {
         new WaveCalculator().setVisible(true);
+    }
     }
