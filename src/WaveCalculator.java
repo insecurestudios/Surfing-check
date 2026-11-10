@@ -6,7 +6,7 @@ import java.awt.event.*;
 /**
  * GUI for the calculator
  * @author liam
- * @version 11/5
+ * @version 11/10
  */
 
 public class WaveCalculator extends JFrame {
@@ -93,6 +93,25 @@ public class WaveCalculator extends JFrame {
         // resizes and centers window
         pack();
         setLocationRelativeTo(null);
+
+        // Calculate button code
+        calculate.addActionListener(e -> {
+            boolean hValid = newUser.setWaveHeight(waveHeight.getText());
+            boolean pValid = newUser.setWavePeriod(wavePeriod.getText());
+            boolean wValid = newUser.setWindSpeed(windSpeed.getText());
+
+            if (newUser.allFieldsEntered()) {
+                String selectedBeach = (String) beachChosen.getSelectedItem();
+                String selectedAbility = (String) surfAbility.getSelectedItem();
+                String selectedWindDir = (String) windDirection.getSelectedItem();
+                String selectedWaveDir = (String) waveDirection.getSelectedItem();
+
+                newUser.calculate(selectedBeach, selectedAbility, selectedWindDir, selectedWaveDir);
+                display.setText(newUser.displayText());
+            } else {
+                display.setText("Please enter valid numeric values in all fields.");
+            }
+        });
     }
 
     void main() {
